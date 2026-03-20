@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biotica Nexus - Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-2 rounded-lg">
+                        <i class="fas fa-microchip text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Biotica Nexus</h1>
+                        <p class="text-gray-600">Dashboard de Monitoreo de Sensores Ambientales</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-circle text-green-500 mr-2"></i>
+                        API Conectada
+                    </span>
+                    <button id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Actualizar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Cards Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Sensors Card -->
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total de Sensores</p>
+                        <h2 id="totalSensors" class="text-3xl font-bold text-gray-900 mt-2">--</h2>
+                        <p class="text-gray-600 text-sm mt-1">Registrados en el sistema</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-sensor text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm">
+                        <span class="text-green-600 font-medium" id="activeSensors">--</span>
+                        <span class="text-gray-500 ml-2">activos</span>
+                        <span class="mx-2">•</span>
+                        <span class="text-yellow-600 font-medium" id="maintenanceSensors">--</span>
+                        <span class="text-gray-500 ml-2">en mantenimiento</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Readings Card -->
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Lecturas Recientes</p>
+                        <h2 id="totalReadings" class="text-3xl font-bold text-gray-900 mt-2">--</h2>
+                        <p class="text-gray-600 text-sm mt-1">Últimas 24 horas</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm">
+                        <span class="text-gray-700 font-medium" id="lastReadingTime">--</span>
+                        <span class="text-gray-500 ml-2">última lectura</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sensor Types Card -->
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Tipos de Sensores</p>
+                        <h2 id="sensorTypes" class="text-3xl font-bold text-gray-900 mt-2">--</h2>
+                        <p class="text-gray-600 text-sm mt-1">Diferentes categorías</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <i class="fas fa-shapes text-purple-600 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="text-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-gray-700">Temperatura</span>
+                            <span id="tempCount" class="font-medium">--</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Humedad</span>
+                            <span id="humidityCount" class="font-medium">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Value Card -->
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Valor Promedio</p>
+                        <h2 id="averageValue" class="text-3xl font-bold text-gray-900 mt-2">--</h2>
+                        <p class="text-gray-600 text-sm mt-1">De todas las lecturas</p>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-full">
+                        <i class="fas fa-calculator text-yellow-600 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm">
+                        <span class="text-gray-700 font-medium" id="valueRange">--</span>
+                        <span class="text-gray-500 ml-2">rango de valores</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Line Chart - Recent Readings -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Lecturas en Tiempo Real</h3>
+                        <p class="text-gray-600 text-sm">Últimas 20 lecturas registradas</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="chartDay" class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg">Día</button>
+                        <button id="chartWeek" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg">Semana</button>
+                        <button id="chartMonth" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg">Mes</button>
+                    </div>
+                </div>
+                <div class="h-80">
+                    <canvas id="readingsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Sensor Status Chart -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Estado de Sensores</h3>
+                        <p class="text-gray-600 text-sm">Distribución por estado operativo</p>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Actualizado en tiempo real
+                    </div>
+                </div>
+                <div class="h-80">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Sensors Table -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Sensores Registrados</h3>
+                    <p class="text-gray-600 text-sm">Lista completa de sensores en el sistema</p>
+                </div>
+                <div class="text-sm text-gray-500" id="lastUpdate">
+                    Cargando...
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubicación</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lecturas</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Lectura</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensorsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Los datos se cargarán aquí -->
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex justify-center">
+                                    <div class="loading"></div>
+                                    <span class="ml-3">Cargando datos de sensores...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-gray-600 text-sm">
+                    <p>© 2026 Biotica Nexus. Plataforma de monitoreo ambiental.</p>
+                    <p class="mt-1">API disponible en <a href="/docs" class="text-blue-600 hover:underline">/docs</a></p>
+                </div>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 text-sm">
+                        <i class="fas fa-home mr-1"></i> Inicio API
+                    </a>
+                    <a href="/docs" class="text-gray-600 hover:text-blue-600 text-sm">
+                        <i class="fas fa-book mr-1"></i> Documentación
+                    </a>
+                    <a href="/health" class="text-gray-600 hover:text-blue-600 text-sm">
+                        <i class="fas fa-heartbeat mr-1"></i> Estado del Servicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript externo -->
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>

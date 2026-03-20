@@ -2,8 +2,11 @@
 Punto de entrada de la aplicación FastAPI para Biotica Nexus.
 """
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import os
 
 from app import crud, models, schemas
 from app.database import engine, get_db
@@ -19,6 +22,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Configurar archivos estáticos
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Endpoints para Sensores
@@ -223,6 +229,15 @@ def health_check():
     }
 
 
+# Endpoint para el dashboard
+@app.get("/dashboard")
+def dashboard():
+    """
+    Endpoint para servir el dashboard interactivo.
+    """
+    return FileResponse("static/index.html")
+
+
 # Endpoint raíz
 @app.get("/")
 def root():
@@ -233,6 +248,7 @@ def root():
         "message": "Bienvenido a Biotica Nexus API",
         "docs": "/docs",
         "redoc": "/redoc",
+        "dashboard": "/dashboard",
         "endpoints": {
             "sensores": "/sensores/",
             "lecturas": "/lecturas/",
